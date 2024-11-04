@@ -1,0 +1,62 @@
+Utilizando Rocky Linux para o laboratório - CHALLENGE-DBA
+
+-- Instalando repositórios:
+
+sudo dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+
+-- Instalando o PosgreSQL v. 17 - September 2024
+
+sudo dnf install -y postgresql17-server
+
+-- Ajustando os binários
+
+ln -s /usr/pgsql-17/* /usr/sbin/
+
+-- Crição do banco de dados, como não disponho de um disco a parte e nem espaço para criação de outro disco virtual para dispor para o banco, vou cría-lo em um diretório separado
+
+mkdir -p /usr/local/pgsql
+
+chown lab_dba /usr/local/pgsql
+
+su - lab_dba
+
+initdb -D /usr/local/pgsql/data
+
+-- ação necessária para acompanhamento dos backups
+
+chmod 740 -R /usr/local/pgsql/data 
+
+exit -- com o usuário root
+
+-- criação de link simbólico, para facilitar na atualização de versão do banco
+
+ln -s /usr/local/pgsql/data /var/lib/pgsql/17
+
+-- start no banco
+
+sudo systemctl enable --now postgresql - 17
+
+-- conferindo status do banco
+
+sudo systemctl status postgresql - 17
+
+-- acessando novamente com o usuário postgres
+
+sudo su - postgres
+
+-- testando o acesso ao banco
+
+psql
+
+-- ok
+
+-- ajustando o postgresql.conf e o pg_hba.conf para permitir conexão remota
+
+postgresql.conf --> campo --> listen_adresses = '*'
+
+pg_hba.conf --> add meu ip fisico
+
+-- após ajustes necessário restart do banco
+
+sudo systemctl restart postgresql - 17
+
